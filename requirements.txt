@@ -1,5 +1,4 @@
 selenium
-webdriver-manager
-flask
 requests
-gunicorn
+flask
+webdriver-manager
