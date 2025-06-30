@@ -2,20 +2,15 @@ services:
   - type: web
     name: ig-selenium-tracker
     env: python
-    buildCommand: |
-      apt-get update
-      apt-get install -y wget gnupg2
-      wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-      apt install -y ./google-chrome-stable_current_amd64.deb
-      pip install -r requirements.txt
-    startCommand: bash start.sh
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start.sh
     envVars:
       - key: BOT_TOKEN
-        sync: false
+        value: 8098677151:AAHw3ofWspeagUJWjWejk91whH9z9y_PoYA
       - key: CHAT_ID
-        sync: false
+        value: 802683583
       - key: IG_USERNAME
-        sync: false
+        value: ansil.666
       - key: IG_PASSWORD
-        sync: false
+        value: Ansil666nigga6
