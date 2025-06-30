@@ -1,6 +1,5 @@
 selenium
+webdriver-manager
 flask
 requests
-webdriver-manager
-python-dotenv
-chromium
+gunicorn
