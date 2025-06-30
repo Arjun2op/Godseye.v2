@@ -3,3 +3,4 @@ flask
 requests
 webdriver-manager
 python-dotenv
+chromium
