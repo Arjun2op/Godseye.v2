@@ -1,9 +1,9 @@
-
 import time, os, json, threading, requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from flask import Flask
 from datetime import datetime
@@ -36,23 +36,29 @@ def run_tracker():
         else:
             old_data = {"followers": [], "following": []}
 
+        # Setup Selenium Options
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
-        driver = webdriver.Chrome(executable_path=ChromeDriverManager().install(), options=options)
-        # Login
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1920x1080')
+        options.add_argument('--disable-blink-features=AutomationControlled')
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
+
+        # Login to Instagram
         driver.get("https://www.instagram.com/accounts/login/")
         time.sleep(5)
         driver.find_element(By.NAME, 'username').send_keys(IG_USERNAME)
         driver.find_element(By.NAME, 'password').send_keys(IG_PASSWORD + Keys.RETURN)
         time.sleep(7)
 
-        # Navigate to target profile
+        # Go to target profile
         driver.get(f"https://www.instagram.com/{TARGET}/")
         time.sleep(5)
 
-        # Get followers/following counts
+        # Scrape data
         followers_button = driver.find_element(By.XPATH, "//a[contains(@href,'/followers')]")
         following_button = driver.find_element(By.XPATH, "//a[contains(@href,'/following')]")
 
@@ -62,11 +68,13 @@ def run_tracker():
         new_followers = [f"Follower count: {followers_count}"]
         new_following = [f"Following count: {following_count}"]
 
+        # Compare Changes
         added_followers = list(set(new_followers) - set(old_data['followers']))
         removed_followers = list(set(old_data['followers']) - set(new_followers))
         added_following = list(set(new_following) - set(old_data['following']))
         removed_following = list(set(old_data['following']) - set(new_following))
 
+        # Format Report
         now = datetime.now().strftime('%Y-%m-%d %H:%M')
         msg = f"📊 IG Tracker Update for @{TARGET}\n🕒 {now}\n"
         if added_followers:
@@ -80,13 +88,14 @@ def run_tracker():
         if msg.strip() == f"📊 IG Tracker Update for @{TARGET}\n🕒 {now}":
             msg += "\n✅ No changes detected."
 
+        # Send & Save
         send(msg)
         with open(LOG_FILE, "a") as f:
             f.write(msg + "\n" + "-"*50 + "\n")
-
         with open(DATA_FILE, "w") as f:
             json.dump({"followers": new_followers, "following": new_following}, f)
 
+        # Weekly Report
         if datetime.now().weekday() == 6:
             weekly_msg = f"📅 Weekly Report for @{TARGET} - {datetime.now().strftime('%Y-%m-%d')}\n\n"
             weekly_msg += f"👥 Followers:\n" + "\n".join(new_followers)
@@ -97,16 +106,19 @@ def run_tracker():
                 send(weekly_msg)
             else:
                 send("📎 Weekly report too long, saved in file.")
+
         driver.quit()
+
     except Exception as e:
         send(f"❌ IG Tracker Error: {e}")
 
+# === Start Thread ===
 threading.Thread(target=run_tracker).start()
 
-# Dummy Flask server
+# === Dummy Flask Server for Render ===
 app = Flask(__name__)
 @app.route('/')
 def home():
     return "IG Selenium Tracker Running"
 
-app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000))
