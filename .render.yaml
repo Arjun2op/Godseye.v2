@@ -1,0 +1,17 @@
+
+services:
+  - type: web
+    name: ig-tracker-selenium
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start.sh
+    plan: free
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: CHAT_ID
+        sync: false
+      - key: IG_USERNAME
+        sync: false
+      - key: IG_PASSWORD
+        sync: false
