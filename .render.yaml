@@ -7,10 +7,10 @@ services:
     startCommand: ./start.sh
     envVars:
       - key: BOT_TOKEN
-        value: 8098677151:AAHw3ofWspeagUJWjWejk91whH9z9y_PoYA
+        value: 
       - key: CHAT_ID
-        value: 802683583
+        value:
       - key: IG_USERNAME
-        value: ansil.666
+        value: 
       - key: IG_PASSWORD
-        value: Ansil666nigga6
+        value: 
