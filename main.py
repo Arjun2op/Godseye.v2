@@ -3,6 +3,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from flask import Flask
 from datetime import datetime
 
@@ -34,23 +36,26 @@ def run_tracker():
         else:
             old_data = {"followers": [], "following": []}
 
-        chrome_options = Options()
-        chrome_options.binary_location = "/usr/bin/google-chrome"
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
 
-        driver = webdriver.Chrome(executable_path="/usr/bin/chromedriver", options=chrome_options)
+        service = Service(ChromeDriverManager().install())
+        driver = webdriver.Chrome(service=service, options=options)
 
+        # Login
         driver.get("https://www.instagram.com/accounts/login/")
         time.sleep(5)
         driver.find_element(By.NAME, 'username').send_keys(IG_USERNAME)
         driver.find_element(By.NAME, 'password').send_keys(IG_PASSWORD + Keys.RETURN)
         time.sleep(7)
 
+        # Navigate to target profile
         driver.get(f"https://www.instagram.com/{TARGET}/")
         time.sleep(5)
 
+        # Get followers/following counts
         followers_button = driver.find_element(By.XPATH, "//a[contains(@href,'/followers')]")
         following_button = driver.find_element(By.XPATH, "//a[contains(@href,'/following')]")
 
@@ -99,11 +104,13 @@ def run_tracker():
     except Exception as e:
         send(f"❌ IG Tracker Error: {e}")
 
+# === Run the tracker in background ===
 threading.Thread(target=run_tracker).start()
 
+# === Dummy Flask server to keep Render awake ===
 app = Flask(__name__)
 @app.route('/')
 def home():
-    return "IG Selenium Tracker Running"
+    return "✅ IG Selenium Tracker Running"
 
 app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
