@@ -1,16 +1,15 @@
 services:
   - type: web
-    name: ig-selenium-tracker
+    name: ig-tracker
     env: python
-    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: ./start.sh
+    startCommand: bash start.sh
     envVars:
       - key: BOT_TOKEN
-        value: 
+        value: your_bot_token_here
       - key: CHAT_ID
-        value:
+        value: your_chat_id_here
       - key: IG_USERNAME
-        value: 
+        value: your_instagram_username
       - key: IG_PASSWORD
-        value: 
+        value: your_instagram_password 
