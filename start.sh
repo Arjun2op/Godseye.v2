@@ -14,11 +14,15 @@ wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.60/linu
 unzip chromedriver.zip -d .render/chromedriver
 mv .render/chromedriver/chromedriver-linux64/chromedriver .render/chromedriver/chromedriver
 chmod +x .render/chromedriver/chromedriver
+apt update && apt install -y wget unzip
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+apt install -y ./google-chrome-stable_current_amd64.deb
+python3 main.py
 
 # Set executable paths
 export PATH=$PATH:/opt/render/project/.render/chrome:/opt/render/project/.render/chromedriver
 export CHROME_BIN="/opt/render/project/.render/chrome/chrome"
 export CHROMEDRIVER_PATH="/opt/render/project/.render/chromedriver/chromedriver"
-
+python3 main.py
 # Run your app
 python3 main.py
