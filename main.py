@@ -1,6 +1,7 @@
 import time, os, json, threading, requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from flask import Flask
@@ -17,9 +18,17 @@ LOG_FILE = "log.txt"
 WEEKLY_FILE = f"{TARGET}_weekly.txt"
 
 # === CHROME SETUP ===
-CHROME_BINARY = "/opt/render/project/.render/chrome/chrome"
+CHROME_BINARY = "/opt/google/chrome/chrome"
 CHROMEDRIVER_PATH = "/opt/render/project/.render/chromedriver/chromedriver"
 
+options = Options()
+options.binary_location = CHROME_BINARY
+options.add_argument("--headless")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+
+service = Service(CHROMEDRIVER_PATH)
+driver = webdriver.Chrome(service=service, options=options)
 # === Send Telegram Message ===
 def send(msg):
     try:
