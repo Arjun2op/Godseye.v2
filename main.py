@@ -18,14 +18,37 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 IG_USERNAME = os.getenv("IG_USERNAME")
 IG_PASSWORD = os.getenv("IG_PASSWORD")
-TARGET = '_anu_.xree'  # Change this to your target username
+TARGET = '_anu_.xree'
 DATA_FILE = f"{TARGET}_data.json"
 LOG_FILE = "log.txt"
 WEEKLY_FILE = f"{TARGET}_weekly.txt"
 
 # === CHROME SETUP ===
-CHROME_BINARY = "/opt/render/project/.render/chrome/chrome"
+CHROME_BIN = "/usr/bin/google-chrome"
 CHROMEDRIVER_PATH = "/opt/render/project/.render/chromedriver/chromedriver"
+
+def get_driver():
+    options = Options()
+    options.binary_location = CHROME_BIN
+    options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920,1080')
+    options.add_argument('--remote-debugging-port=9222')
+    options.add_argument('--disable-extensions')
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    
+    service = Service(
+        executable_path=CHROMEDRIVER_PATH,
+        service_args=['--verbose', '--log-path=chromedriver.log']
+    )
+    
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    return driver
 
 # === Send Telegram Message ===
 def send(msg):
@@ -47,22 +70,7 @@ def run_tracker():
             else:
                 old_data = {"followers": [], "following": []}
 
-            # Configure Chrome options
-            options = Options()
-            options.binary_location = CHROME_BINARY
-            options.add_argument('--headless=new')
-            options.add_argument('--no-sandbox')
-            options.add_argument('--disable-dev-shm-usage')
-            options.add_argument('--disable-gpu')
-            options.add_argument('--remote-debugging-port=9222')
-            options.add_argument("--disable-blink-features=AutomationControlled")
-            options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_experimental_option("useAutomationExtension", False)
-
-            # Initialize WebDriver
-            service = Service(executable_path=CHROMEDRIVER_PATH)
-            driver = webdriver.Chrome(service=service, options=options)
-            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+            driver = get_driver()
 
             # Login to Instagram
             driver.get("https://www.instagram.com/accounts/login/")
@@ -168,7 +176,7 @@ def run_tracker():
 # === Start Tracker in Background ===
 threading.Thread(target=run_tracker, daemon=True).start()
 
-# === Dummy Web Server (keeps Render running) ===
+# === Dummy Web Server ===
 app = Flask(__name__)
 
 @app.route('/')
