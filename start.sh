@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# Create directories
-mkdir -p /opt/render/project/.render/chrome
-mkdir -p /opt/render/project/.render/chromedriver
-
-# Install dependencies
+# Install system dependencies
 apt-get update && apt-get install -y \
     wget \
     unzip \
@@ -27,23 +23,12 @@ apt-get update && apt-get install -y \
     libappindicator3-1 \
     xdg-utils
 
-# Download and install Chrome
-wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -yf
-rm google-chrome-stable_current_amd64.deb
-
-# Download ChromeDriver
-CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
-CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}")
-wget "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip
-unzip chromedriver.zip -d /opt/render/project/.render/chromedriver
-chmod +x /opt/render/project/.render/chromedriver/chromedriver
-rm chromedriver.zip
+# Install Chrome using webdriver-manager (simplest approach)
+pip install webdriver-manager
 
 # Set environment variables
-export PATH=$PATH:/opt/render/project/.render/chromedriver
 export CHROME_BIN="/usr/bin/google-chrome"
-export CHROMEDRIVER_PATH="/opt/render/project/.render/chromedriver/chromedriver"
+export CHROMEDRIVER_PATH="/usr/local/bin/chromedriver"
 
 # Install Python dependencies
 pip install -r requirements.txt
