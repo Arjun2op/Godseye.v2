@@ -22,26 +22,27 @@ apt-get update && apt-get install -y \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
     libpangocairo-1.0-0 \
-    libgtk-3-0
+    libgtk-3-0 \
+    fonts-liberation \
+    libappindicator3-1 \
+    xdg-utils
 
-# Download Chrome
-wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.60/linux64/chrome-linux64.zip -O chrome.zip
-unzip chrome.zip -d /opt/render/project/.render/chrome
-mv /opt/render/project/.render/chrome/chrome-linux64/chrome /opt/render/project/.render/chrome/
-chmod +x /opt/render/project/.render/chrome/chrome
+# Download and install Chrome
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -yf
+rm google-chrome-stable_current_amd64.deb
 
-# Download Chromedriver
-wget https://storage.googleapis.com/chrome-for-testing-public/125.0.6422.60/linux64/chromedriver-linux64.zip -O chromedriver.zip
+# Download ChromeDriver
+CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
+CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}")
+wget "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -O chromedriver.zip
 unzip chromedriver.zip -d /opt/render/project/.render/chromedriver
-mv /opt/render/project/.render/chromedriver/chromedriver-linux64/chromedriver /opt/render/project/.render/chromedriver/
 chmod +x /opt/render/project/.render/chromedriver/chromedriver
-
-# Clean up
-rm chrome.zip chromedriver.zip
+rm chromedriver.zip
 
 # Set environment variables
-export PATH=$PATH:/opt/render/project/.render/chrome:/opt/render/project/.render/chromedriver
-export CHROME_BIN="/opt/render/project/.render/chrome/chrome"
+export PATH=$PATH:/opt/render/project/.render/chromedriver
+export CHROME_BIN="/usr/bin/google-chrome"
 export CHROMEDRIVER_PATH="/opt/render/project/.render/chromedriver/chromedriver"
 
 # Install Python dependencies
